@@ -3,6 +3,8 @@ package com.my.pharmacy.service;
 import com.my.pharmacy.dto.KakaoApiResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -23,26 +25,30 @@ public class KakaoCategorySearchService {
 //    private static final String CATEGORY = "PM9";
     // 카테고리 상수(카페)
     private static final String CATEGORY = "CE7";
-
     // 위도 : latitude, 경도 : longitude를 인자로 받아서 카테고리 검색
-    public KakaoApiResponseDto resultCategorySearch(double latitude, double longitude) {
+    public KakaoApiResponseDto resultCategorySearch(
+            double latitude, double longitude) {
         UriComponentsBuilder uriBuilder = UriComponentsBuilder
                 .fromUriString(KAKAO_CATEGORY_URL);
         // 1. 카테고리
         uriBuilder.queryParam("category_group_code", CATEGORY);
-        // 2. x값, y값
+        // 2. x 값, y 값
         uriBuilder.queryParam("x", longitude);
         uriBuilder.queryParam("y", latitude);
         // 3. 검색 반경
         uriBuilder.queryParam("radius", 1000);
         // 4. 검색 사이즈 - 나중에 처리
-        // 5. 정렬 처리
+        // 5. 정렬처리
         uriBuilder.queryParam("sort", "distance");
-
 
         // url 에 포함된 한글을 UTF-8 인코딩 처리
         URI uri = uriBuilder.build().encode().toUri();
+        // 헤더 작업
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, "KakaoAK " + kakaoRestApiKey);
+        HttpEntity<Object> httpEntity = new HttpEntity<>(headers);
 
+        // 카카오 api 호출
         return restTemplate
                 .exchange(
                         uri,
